@@ -49,17 +49,13 @@ const actions = {
     return new Promise((resolve, reject) => {
       getInfo()
         .then(response => {
-          const { data } = response;
-
           if (!response) {
             return reject("Verification failed, please Login again.");
           }
-
           const { name, avatar } = response;
-
           commit("SET_NAME", name);
           commit("SET_AVATAR", avatar);
-          resolve(data);
+          resolve(response);
         })
         .catch(error => {
           reject(error);
