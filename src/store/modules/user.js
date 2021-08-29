@@ -32,7 +32,7 @@ const actions = {
   login({ commit }, userInfo) {
     const { username, password } = userInfo;
     return new Promise((resolve, reject) => {
-      login({ username, password })
+      login(username, password)
         .then(response => {
           commit("SET_TOKEN", response.token);
           setToken(response.token);
@@ -49,6 +49,8 @@ const actions = {
     return new Promise((resolve, reject) => {
       getInfo()
         .then(response => {
+          const { data } = response;
+
           if (!response) {
             return reject("Verification failed, please Login again.");
           }
@@ -57,7 +59,7 @@ const actions = {
 
           commit("SET_NAME", name);
           commit("SET_AVATAR", avatar);
-          resolve(response);
+          resolve(data);
         })
         .catch(error => {
           reject(error);
