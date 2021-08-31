@@ -16,8 +16,10 @@
         </template>
       </el-table-column>
       <el-table-column label="操作">
-        <el-button type="warning" icon="el-icon-edit">修改</el-button>
-        <el-button type="danger" icon="el-icon-delete">删除</el-button>
+        <template v-slot="{row}">
+          <el-button type="warning" icon="el-icon-edit" @click="showUpdateTrademark(row)">修改</el-button>
+        <el-button type="danger" icon="el-icon-delete" @click="delTrademark(row)">删除</el-button>
+        </template>
       </el-table-column>
     </el-table>
 
@@ -34,7 +36,7 @@
 
 
     <el-dialog
-      title="修改品牌"
+      :title="`${isUpdateTrademark?'修改':'添加'}品牌`"
       :visible.sync="visible"
     >
       <!-- body -->
@@ -69,7 +71,7 @@
       <!-- footer -->
       <span slot="footer" class="dialog-footer">
         <el-button @click="visible= false">取 消</el-button>
-        <el-button type="primary" @click="addTrademark">
+        <el-button type="primary" @click="addOrUpdateTrademark">
           确 定
         </el-button>
       </span>
@@ -78,7 +80,12 @@
 </template>
 
 <script>
-import { reqGetTrademarkList ,reqSaveTrademark} from "@/api/product/tardemark";
+import {
+  reqGetTrademarkList,
+  reqSaveTrademark,
+  reqRemoveTrademark,
+  reqUpdateTrademark,
+} from "@/api/product/tardemark";
 export default {
   name: "Trademark",
   data() {
@@ -104,8 +111,12 @@ export default {
         tmName: [
           { required: true, message: "请输入品牌名称", trigger: "blur" },
         ],
-        logoUrl: [{ required: true, message: "请上传品牌LOGO" ,trigger: "change"}],
+        logoUrl: [
+          { required: true, message: "请上传品牌LOGO", trigger: "change" },
+        ],
       },
+      // 是否是更新或添加
+      isUpdateTrademark: false,
     };
   },
   mounted() {
@@ -132,7 +143,7 @@ export default {
     handleAvatarSuccess(res) {
       this.trademark.logoUrl = res.data;
       // 清空图片的表单验证效果
-      this.$refs.form.clearValidate(['logoUrl'])
+      this.$refs.form.clearValidate(["logoUrl"]);
     },
     // 上传之前触发的回调
     beforeAvatarUpload(file) {
@@ -148,26 +159,72 @@ export default {
       }
       return isValidFileType && isLt;
     },
-    // 添加品牌
-    addTrademark(){
-      this.$refs.form.validate(async(valid)=>{
-        if(valid){
-          const {tmName, logoUrl} =this.trademark
-          await reqSaveTrademark(tmName, logoUrl)
+    // 添加或修改品牌
+    addOrUpdateTrademark() {
+      this.$refs.form.validate(async (valid) => {
+        if (valid) {
+          const { tmName, logoUrl } = this.trademark;
+          const { isUpdateTrademark } = this;
+          // if (this.isUpdateTrademark) {
+          if (isUpdateTrademark) {
+            await reqUpdateTrademark(this.trademark);
+          } else {
+            await reqSaveTrademark(tmName, logoUrl);
+          }
+
           this.$message({
-            type:'success',
-            message:"添加成功"
-          })
-          this.getTrademarkList(this.currentPage, pageSize);
-          this.visible=false
+            type: "success",
+            message: `${isUpdateTrademark ? "修改" : "添加"}成功`,
+          });
+          this.getTrademarkList(this.currentPage, this.pageSize);
+          this.visible = false;
         }
-      })
+      });
     },
     // 显示添加品牌
-    showSaveTrademark(){
-      this.visible=true
-      this.$refs.form.resetFields()
-    }
+    showSaveTrademark() {
+      this.isUpdateTrademark = false;
+      this.visible = true;
+      // 清空表单校验结果
+      this.$refs.form?.resetFields();
+      // 清空数据
+      this.trademark = {
+        tmName: "",
+        logoUrl: "",
+      };
+    },
+    // 显示修改品牌
+    showUpdateTrademark(row) {
+      this.isUpdateTrademark = true;
+      this.visible = true;
+      this.trademark = { ...row };
+    },
+    // 删除品牌
+    delTrademark(tm) {
+      this.$confirm(
+        `您确认要删除 <span style="color:red;">${tm.tmName}</span> 品牌数据吗?`,
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+          dangerouslyUseHTMLString: true,
+        }
+      ).then(async () => {
+        // 发送请求
+        await reqRemoveTrademark(tm.id);
+        this.$message({
+          type: "success",
+          message: "删除成功!",
+        });
+        // 如果是当前页面的最后一条数据，删掉之后去上一页
+        if (this.trademarkList.length === 1 && this.currentPage > 1) {
+          this.currentPage--;
+        }
+        // 更新页面数据
+        this.getTrademarkList(this.currentPage, this.pageSize);
+      });
+    },
   },
 };
 </script>

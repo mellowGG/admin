@@ -19,3 +19,20 @@ export function reqSaveTrademark(tmName, logoUrl) {
     }
   });
 }
+
+// 删除品牌
+export function reqRemoveTrademark(id) {
+  return request({
+    url: `/admin/product/baseTrademark/remove/${id}`,
+    method: "DELETE"
+  });
+}
+
+// 修改品牌
+export function reqUpdateTrademark(data) {
+  return request({
+    url: `/admin/product/baseTrademark/update`,
+    method: "PUT",
+    data
+  });
+}
