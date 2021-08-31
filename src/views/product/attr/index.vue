@@ -1,13 +1,18 @@
 <template>
-  <div>attr</div>
+  <div>
+    <CategorySelector />
+  </div>
 </template>
 
 <script>
+import CategorySelector from "../../../components/CategorySelector";
 export default {
-name:"Attr"
-}
+  name: "Attr",
+  components:{
+    CategorySelector
+  }
+};
 </script>
 
 <style>
-
 </style>
