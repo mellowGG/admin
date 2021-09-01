@@ -1,86 +1,38 @@
 <template>
   <div>
-    <CategorySelector />
-    <el-card class="container">
-      <el-button
-        type="primary"
-        icon="el-icon-plus"
-        class="el-btn"
-        :disabled="!category3Id"
-      >
-        添加属性
-      </el-button>
-      <el-table :data="attrList" border>
-        <el-table-column type="index" label="序号" width="80" align="center">
-        </el-table-column>
-        <el-table-column prop="attrName" label="属性名"></el-table-column>
-        <el-table-column label="属性值列表" prop="attrValueList">
-          <template v-slot="{ row }">
-            <el-tag
-              class="attr-tag"
-              v-for="attrValue in row.attrValueList"
-              :key="attrValue.id"
-            >
-              {{ attrValue.valueName }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作">
-          <template v-slot="{ row }">
-            <el-tooltip content="修改属性" placement="top">
-              <el-button size="mini" type="warning" icon="el-icon-edit">
-              </el-button>
-            </el-tooltip>
-            <el-tooltip content="删除属性" placement="top">
-              <el-button size="mini" type="danger" icon="el-icon-delete">
-              </el-button>
-            </el-tooltip>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+    <CategorySelector :disabled="!isShowAttrList" />
+    <AttrList
+      v-show="isShowAttrList"
+      @updateIsShowAttrList="updateIsShowAttrList"
+    />
+    <AddOrUpdateAttr v-show="!isShowAttrList" />
   </div>
 </template>
 
 <script>
-import { mapState } from "vuex";
-import { reqGetAttrkList } from "@/api/product/attr";
+import AttrList from "./attrList";
+import AddOrUpdateAttr from "./addOrUpdateAttr";
 import CategorySelector from "@/components/CategorySelector";
+
 export default {
   name: "Attr",
   data() {
     return {
-      attrList: [],
+      isShowAttrList: false,
     };
   },
-  computed: {
-    ...mapState("category", ["category1Id", "category2Id", "category3Id"]),
-  },
-  watch: {
-    async category3Id(category3Id) {
-      // 如果没有3Id，不发送请求
-      if (!category3Id) return;
-      const { category1Id, category2Id } = this;
-      const attrList = await reqGetAttrkList({
-        category1Id,
-        category2Id,
-        category3Id,
-      });
-      this.attrList = attrList;
+  methods: {
+    updateIsShowAttrList(isShowAttrList) {
+      this.isShowAttrList = isShowAttrList;
     },
   },
   components: {
     CategorySelector,
+    AttrList,
+    AddOrUpdateAttr,
   },
 };
 </script>
 
 <style scoped>
-.el-btn {
-  margin-bottom: 20px;
-}
-.attr-tag {
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
 </style>

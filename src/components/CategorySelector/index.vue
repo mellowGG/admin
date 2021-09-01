@@ -1,6 +1,6 @@
 <template>
   <el-card class="container">
-    <el-form inline>
+    <el-form inline :disabled="disabled">
       <el-form-item label="一级分类" class="category-form-item">
         <el-select
           :value="category1Id"
@@ -56,6 +56,12 @@ export default {
   name: "CategorySelector",
   data() {
     return {};
+  },
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   mounted() {
     // 请求一级分类
