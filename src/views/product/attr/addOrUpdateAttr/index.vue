@@ -24,7 +24,7 @@
             placeholder="请输入属性值名称"
             :ref="$index"
             v-model="attr.valueName"
-            @blur="setAttrValue(row,$index)"
+            @blur="setAttrValue(row, $index)"
             v-show="row.isEdit"
             @keyup.enter.native="$event.target.blur()"
           ></el-input>
@@ -38,11 +38,18 @@
       </el-table-column>
 
       <el-table-column label="操作">
-        <template v-slot="{ row }">
-          <el-tooltip content="删除属性值" placement="top">
-            <el-button size="mini" type="danger" icon="el-icon-delete">
-            </el-button>
-          </el-tooltip>
+        <template v-slot="{ $index }">
+          <el-popconfirm
+            icon="el-icon-info"
+            icon-color="red"
+            title="确定删除吗？"
+            @onConfirm="delAttrValue($index)"
+          >
+            <el-tooltip content="删除属性值" placement="top" slot="reference">
+              <el-button size="mini" type="danger" icon="el-icon-delete">
+              </el-button>
+            </el-tooltip>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -112,6 +119,10 @@ export default {
         // 让input聚焦
         this.$refs[index].focus();
       });
+    },
+    // 删除属性值
+    delAttrValue(index) {
+      this.attrValueList.splice(index, 1);
     },
   },
 };
