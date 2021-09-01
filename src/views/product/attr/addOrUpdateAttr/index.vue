@@ -18,11 +18,23 @@
       <el-table-column type="index" label="序号" width="80" align="center">
       </el-table-column>
       <el-table-column label="属性值名称" prop="valueName">
-        <el-input
-          size="mini"
-          placeholder="请输入属性值名称"
-          ref="input"
-        ></el-input>
+        <template v-slot="{ row, $index }">
+          <el-input
+            size="mini"
+            placeholder="请输入属性值名称"
+            :ref="$index"
+            v-model="attr.valueName"
+            @blur="setAttrValue(row,$index)"
+            v-show="row.isEdit"
+            @keyup.enter.native="$event.target.blur()"
+          ></el-input>
+          <span
+            class="isEditText"
+            v-show="!row.isEdit"
+            @click="showEdit(row, $index)"
+            >{{ row.valueName }}</span
+          >
+        </template>
       </el-table-column>
 
       <el-table-column label="操作">
@@ -48,6 +60,7 @@ export default {
       attrValueList: [],
       attr: {
         attrName: "",
+        valueName: "",
       },
       rules: {
         attrName: [
@@ -63,12 +76,42 @@ export default {
   methods: {
     // 添加属性值
     addAttrValue() {
-      this.attrValueList.push({});
+      this.attrValueList.push({
+        // 属性值
+        valueName: "",
+        // 是否是编辑模式
+        isEdit: true,
+      });
       // 更新为异步的
-      this.$nextTick(()=>{
+      this.$nextTick(() => {
         // 让input聚焦
-      this.$refs.input.focus()
-      })
+        this.$refs[this.attrValueList.length - 1].focus();
+      });
+    },
+    // 设置属性值 编辑到显示
+    setAttrValue(row, index) {
+      const { valueName } = this.attr;
+      if (!valueName) {
+        this.attrValueList.splice(index, 1);
+        return;
+      }
+      // this.attrValueList[index].valueName = this.attr.valueName;
+      row.valueName = valueName;
+      // this.$set(row, "valueName", this.attr.valueName);
+      // 切换回显示模式
+      row.isEdit = false;
+      // 临时数据为空
+      this.attr.valueName = "";
+    },
+    // 显示到编辑
+    showEdit(row, index) {
+      row.isEdit = true;
+
+      this.attr.valueName = row.valueName;
+      this.$nextTick(() => {
+        // 让input聚焦
+        this.$refs[index].focus();
+      });
     },
   },
 };
@@ -77,5 +120,8 @@ export default {
 <style scoped>
 .table {
   margin: 10px 0;
+}
+.isEditText {
+  display: block;
 }
 </style>
