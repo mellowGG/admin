@@ -1,6 +1,6 @@
 <template>
   <el-card class="container">
-    <el-form inline :model="attr" :rules="rules">
+    <el-form inline :model="attr" :rules="rules" ref="form">
       <el-form-item label="属性名" prop="attrName">
         <el-input placeholder="请输入属性名" v-model="attr.attrName"></el-input>
       </el-form-item>
@@ -54,12 +54,14 @@
       </el-table-column>
     </el-table>
 
-    <el-button type="primary">确定</el-button>
-    <el-button>取消</el-button>
+    <el-button type="primary" @click="addAttr">确定</el-button>
+    <el-button @click="cancel">取消</el-button>
   </el-card>
 </template>
 
 <script>
+import { mapState } from "vuex";
+import { reqSaveAttr } from "@/api/product/attr";
 export default {
   name: "AddOrUpdateAttr",
   data() {
@@ -79,6 +81,9 @@ export default {
         ],
       },
     };
+  },
+  computed: {
+    ...mapState("category", ["category3Id"]),
   },
   methods: {
     // 添加属性值
@@ -123,6 +128,46 @@ export default {
     // 删除属性值
     delAttrValue(index) {
       this.attrValueList.splice(index, 1);
+    },
+    // 添加属性
+    async addAttr() {
+      const {
+        attrValueList,
+        attr: { attrName },
+      } = this;
+      // 判断是否由属性名
+      this.$refs.form.validate(async (valid) => {
+        if (!valid) return;
+        // 判断至少有一个属性值
+        if (!attrValueList.length) {
+          this.$message({
+            type: "error",
+            message: "请添加至少一个属性值",
+          });
+          return;
+        }
+        // 都有才添加
+        const attr = {
+          attrName: attrName,
+          attrValueList: attrValueList,
+          categoryId: this.category3Id,
+          categoryLevel: 3,
+        };
+
+        await reqSaveAttr(attr);
+        this.cancel();
+      });
+    },
+    //
+    cancel() {
+      // 清空数据
+      this.attrValueList = [];
+      this.attr = {
+        attrName: "",
+        valueName: "",
+      };
+      // 去上个页面
+      this.$emit("updateIsShowAttrList", true);
     },
   },
 };

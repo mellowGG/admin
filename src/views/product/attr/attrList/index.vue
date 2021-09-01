@@ -58,16 +58,19 @@ export default {
     ...mapState("category", ["category1Id", "category2Id", "category3Id"]),
   },
   watch: {
-    async category3Id(category3Id) {
-      // 如果没有3Id，不发送请求
-      if (!category3Id) return;
-      const { category1Id, category2Id } = this;
-      const attrList = await reqGetAttrkList({
-        category1Id,
-        category2Id,
-        category3Id,
-      });
-      this.attrList = attrList;
+    category3Id: {
+      async handler(category3Id) {
+        // 如果没有3Id，不发送请求
+        if (!category3Id) return;
+        const { category1Id, category2Id } = this;
+        const attrList = await reqGetAttrkList({
+          category1Id,
+          category2Id,
+          category3Id,
+        });
+        this.attrList = attrList;
+      },
+      immediate: true,
     },
   },
 };
